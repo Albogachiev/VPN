@@ -1,8 +1,12 @@
 CREATE TABLE Users (
 user_id SERIAL PRIMARY KEY,
 username VARCHAR(50) NOT NULL,
-password_hash VARCHAR(255) NOT NULL,
-email VARCHAR(100) UNIQUE NOT NULL,
+password_hash VARCHAR(255), -- Поле для пароля может быть пустым, если используется только Google/Apple OAuth
+phone_number VARCHAR(20) UNIQUE, -- Только если телефон используется для регистрации
+google_id VARCHAR(255) UNIQUE, -- Идентификатор пользователя Google
+apple_id VARCHAR(255) UNIQUE, -- Идентификатор пользователя Apple (iCloud)
+email VARCHAR(255) UNIQUE, -- Электронная почта, может быть нужна для подтверждения
+provider VARCHAR(50) DEFAULT NULL, -- Хранит информацию о том, через какой сервис был произведен вход (Google, Apple, Phone)
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -34,4 +38,12 @@ log_id SERIAL PRIMARY KEY,
 connection_id INTEGER REFERENCES Connections(connection_id) ON DELETE CASCADE,
 log_message TEXT NOT NULL,
 timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE VerificationCodes (
+code_id SERIAL PRIMARY KEY,
+user_id INTEGER REFERENCES Users(user_id) ON DELETE CASCADE,
+verification_code VARCHAR(6) NOT NULL,
+expires_at TIMESTAMP NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -1,0 +1,1 @@
+export { RegCont } from './RegistrationCont';
