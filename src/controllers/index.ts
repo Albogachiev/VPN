@@ -1,1 +1,2 @@
-export { RegCont } from './RegistrationCont';
+export {} from './authController';
+export {} from './userController';
