@@ -1,3 +1,4 @@
+рекомендации - добавления индексов на поля username, phone_number, google_id, apple_id и email, если планируете часто выполнять запросы по этим полям.
 CREATE TABLE Users (
 user_id SERIAL PRIMARY KEY,
 username VARCHAR(50) NOT NULL,
