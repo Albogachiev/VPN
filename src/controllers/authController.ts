@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const registerUser = async (req: Request, res: Response) => {
-  const { username, password, phone_number, email } = req.body;
+  const { username, password, phone_number, email, provider } = req.body;
   const existingUser = await getUserByUsernameOrEmailOrPhone({ password, phone_number, email });
   if (existingUser.length > 0) {
     return res.status(400).json({
@@ -15,7 +15,13 @@ const registerUser = async (req: Request, res: Response) => {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = await createUser({ username, password: hashedPassword, phone_number, email });
+  const newUser = await createUser({
+    username,
+    password: hashedPassword,
+    phone_number,
+    email,
+    provider,
+  });
   const { JWT_SECRET } = process.env;
 
   const token = jwt.sign({ userId: newUser.rows[0].user_id }, `${JWT_SECRET}`, {
@@ -24,4 +30,20 @@ const registerUser = async (req: Request, res: Response) => {
   res.status(201).json({ message: 'Пользователь успешно зарегистрировался', token });
 };
 
-export { registerUser };
+const loginUser = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+  const user = await getUserByUsernameOrEmailOrPhone({ email });
+  if (user.length === 0) {
+    return res.status(400).json({ errors: 'Неверные учетные данные' });
+  }
+  const isMatch = await bcrypt.compare(password, user[0].password_hash);
+  if (!isMatch) {
+    return res.status(400).json({ errors: 'Неверные учетные данные' });
+  }
+
+  const { JWT_SECRET } = process.env;
+  const token = jwt.sign({ userId: user[0].user_id }, `${JWT_SECRET}`, { expiresIn: '1h' });
+  res.status(200).json({ message: 'Успешный вход', token });
+};
+
+export { registerUser, loginUser };
