@@ -1,3 +1,13 @@
+import { JwtPayload } from 'jsonwebtoken';
+
+declare global {
+  //добавил свойство user в объекте Request
+  namespace Express {
+    interface Request {
+      user: string | JwtPayload;
+    }
+  }
+}
 interface User {
   user_id: number;
   username: string;
