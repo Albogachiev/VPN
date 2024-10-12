@@ -4,7 +4,7 @@ import { registerValidationRules, validate, loginValidationRules } from '../midd
 
 const router = Router();
 
-router.post('/register', [registerValidationRules(), validate], registerUser);
-router.post('/login', [loginValidationRules(), validate], loginUser);
+router.post('/register', registerValidationRules(), validate, registerUser);
+router.post('/login', loginValidationRules(), validate, loginUser);
 
 export default router;

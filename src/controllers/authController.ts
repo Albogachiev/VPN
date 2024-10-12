@@ -5,13 +5,14 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const registerUser = async (req: Request, res: Response) => {
+const registerUser = async (req: Request, res: Response): Promise<void> => {
   const { username, password, phone_number, email, provider } = req.body;
   const existingUser = await getUserByUsernameOrEmailOrPhone({ password, phone_number, email });
   if (existingUser.length > 0) {
-    return res.status(400).json({
+    res.status(400).json({
       errors: 'Пользователь с таким адресом электронной почты или номером телефона уже существует',
     });
+    return;
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -30,15 +31,17 @@ const registerUser = async (req: Request, res: Response) => {
   res.status(201).json({ message: 'Пользователь успешно зарегистрировался', token });
 };
 
-const loginUser = async (req: Request, res: Response) => {
+const loginUser = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
   const user = await getUserByUsernameOrEmailOrPhone({ email });
   if (user.length === 0) {
-    return res.status(400).json({ errors: 'Неверные учетные данные' });
+    res.status(400).json({ errors: 'Неверные учетные данные' });
+    return;
   }
   const isMatch = await bcrypt.compare(password, user[0].password_hash);
   if (!isMatch) {
-    return res.status(400).json({ errors: 'Неверные учетные данные' });
+    res.status(400).json({ errors: 'Неверные учетные данные' });
+    return;
   }
 
   const { JWT_SECRET } = process.env;
