@@ -13,10 +13,16 @@ const getUserByUsernameOrEmailOrPhone = async ({
   return result.rows;
 };
 
-const createUser = async ({ username, password, phone_number, email }: CreateUserParams) => {
+const createUser = async ({
+  username,
+  password,
+  phone_number,
+  email,
+  provider,
+}: CreateUserParams) => {
   const newUser = await db.query(
-    'INSERT INTO User(username, password_hash, phone_numbers, email) VALUES ($1, $2, $3, $4)',
-    [username, password, phone_number, email],
+    'INSERT INTO User(username, password_hash, phone_numbers, email, provider) VALUES ($1, $2, $3, $4, $5)',
+    [username, password, phone_number, email, provider],
   );
   return newUser;
 };

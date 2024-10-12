@@ -15,12 +15,13 @@ interface CreateUserParams {
   password: string;
   phone_number: string;
   email: string;
+  provider: string;
 }
 
 interface GetUserParams {
-  password: string;
+  password?: string;
   email: string;
-  phone_number: string;
+  phone_number?: string;
 }
 
 export { User, CreateUserParams, GetUserParams };
