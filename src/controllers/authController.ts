@@ -1,5 +1,10 @@
 import { Request, Response } from 'express';
-import { getUserByUsernameOrEmailOrPhone, createUser } from '../db/queries';
+import {
+  getUserByUsernameOrEmailOrPhone,
+  createUser,
+  verifyRefreshToken,
+  saveRefreshToken,
+} from '../db/queries';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -25,10 +30,16 @@ const registerUser = async (req: Request, res: Response): Promise<void> => {
   });
   const { JWT_SECRET } = process.env;
 
-  const token = jwt.sign({ userId: newUser.rows[0].user_id }, `${JWT_SECRET}`, {
-    expiresIn: '1h',
+  const accessToken = jwt.sign({ userId: newUser.rows[0].user_id }, `${JWT_SECRET}`, {
+    expiresIn: '30m',
   });
-  res.status(201).json({ message: 'Пользователь успешно зарегистрировался', token });
+  const refreshToken = jwt.sign({ userId: newUser.rows[0].user_id }, `${JWT_SECRET}`, {
+    expiresIn: '7d',
+  });
+  await saveRefreshToken(newUser.rows[0].user_id, refreshToken);
+  res
+    .status(201)
+    .json({ message: 'Пользователь успешно зарегистрировался', accessToken, refreshToken });
 };
 
 const loginUser = async (req: Request, res: Response): Promise<void> => {
@@ -45,8 +56,23 @@ const loginUser = async (req: Request, res: Response): Promise<void> => {
   }
 
   const { JWT_SECRET } = process.env;
-  const token = jwt.sign({ userId: user[0].user_id }, `${JWT_SECRET}`, { expiresIn: '1h' });
-  res.status(200).json({ message: 'Успешный вход', token });
+  const accessToken = jwt.sign({ userId: user[0].user_id }, `${JWT_SECRET}`, { expiresIn: '30m' });
+  const refreshToken = jwt.sign({ userId: user[0].iser_id }, `${JWT_SECRET}`, { expiresIn: '7d' });
+  await saveRefreshToken(user[0].user_id, refreshToken);
+
+  res.status(200).json({ message: 'Успешный вход', accessToken, refreshToken });
 };
 
-export { registerUser, loginUser };
+const refreshAccessToken = async (req: Request, res: Response): Promise<void> => {
+  const { refreshToken } = req.body;
+  const user = await verifyRefreshToken(refreshToken);
+
+  if (!user) {
+    res.status(403).json({ message: 'Недействительный refresh токен' });
+  }
+  const { JWT_SECRET } = process.env;
+  const accessToken = jwt.sign({ userId: user.user_id }, `${JWT_SECRET}`, { expiresIn: '30m' });
+  res.status(200).json({ accessToken });
+};
+
+export { registerUser, loginUser, refreshAccessToken };

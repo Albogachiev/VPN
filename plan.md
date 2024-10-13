@@ -11,6 +11,15 @@ provider VARCHAR(50) DEFAULT NULL, -- Хранит информацию о то�
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE RefreshTokens (
+token_id SERIAL PRIMARY KEY,
+user_id INTEGER REFERENCES
+Users(user_id) ON DELETE CASCADE,
+refresh_token VARCHAR(255) UNIQUE NOT NULL,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+expires_at TIMESTAMP NOT NULL
+);
+
 CREATE TABLE Sessions (
 session_id SERIAL PRIMARY KEY,
 user_id INTEGER REFERENCES Users(user_id) ON DELETE CASCADE,
@@ -48,3 +57,8 @@ verification_code VARCHAR(6) NOT NULL,
 expires_at TIMESTAMP NOT NULL,
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+http://localhost:3000/
+секрет клиента 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
+ид клиента 852601239920-7sdtvvm3ghqfkqn3ib2asf9h6qj5kkb6
+https://maxpfrontend.ru/vebinary/avtorizatsiya-s-pomoschyu-google-sign-in/
