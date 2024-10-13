@@ -1,13 +1,12 @@
 import express from 'express';
 const app = express();
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 
 require('dotenv').config();
 const morgan = require('morgan');
 app.use(morgan('dev'));
 app.use(express.json());
-
-import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
 
 const { PORT } = process.env;
 
