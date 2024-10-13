@@ -21,16 +21,13 @@ interface User {
 }
 
 interface CreateUserParams {
-  username: string;
   password: string;
   phone_number: string;
-  email: string;
   provider: string;
 }
 
 interface GetUserParams {
   password?: string;
-  email: string;
   phone_number?: string;
 }
 

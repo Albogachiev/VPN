@@ -3,4 +3,6 @@ export {
   createUser,
   saveRefreshToken,
   verifyRefreshToken,
+  saveVerifycationCode,
+  verifyCodeInDb,
 } from './authQueries';
