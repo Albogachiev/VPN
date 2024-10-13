@@ -2,6 +2,7 @@
 CREATE TABLE Users (
 user_id SERIAL PRIMARY KEY,
 username VARCHAR(50) NOT NULL,
+phone_code
 password_hash VARCHAR(255), -- Поле для пароля может быть пустым, если используется только Google/Apple OAuth
 phone_number VARCHAR(20) UNIQUE, -- Только если телефон используется для регистрации
 google_id VARCHAR(255) UNIQUE, -- Идентификатор пользователя Google

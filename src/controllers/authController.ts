@@ -4,28 +4,41 @@ import {
   createUser,
   verifyRefreshToken,
   saveRefreshToken,
+  saveVerifycationCode,
 } from '../db/queries';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
+import twilio from 'twilio';
+import crypto from 'crypto';
 
 const registerUser = async (req: Request, res: Response): Promise<void> => {
-  const { username, password, phone_number, email, provider } = req.body;
-  const existingUser = await getUserByUsernameOrEmailOrPhone({ password, phone_number, email });
+  const { password, phone_number, provider } = req.body;
+  const existingUser = await getUserByUsernameOrEmailOrPhone({ password, phone_number });
   if (existingUser.length > 0) {
     res.status(400).json({
       errors: 'Пользователь с таким адресом электронной почты или номером телефона уже существует',
     });
     return;
   }
+  //--twilio
+  const twilioClient = twilio('TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN');
+  const code = crypto.randomInt(100000, 999999).toString(); //генерация 7 значного кода
+  await saveVerifycationCode(phone_number, code);
+  await twilioClient.messages.create({
+    //отправка кода на телефон
+    body: `Ваш код для подтверждения: ${code}`,
+    from: 'TWILIO_PHONE_NUMBER', //мой номер твилио
+    to: phone_number,
+  });
+
+  //--
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const newUser = await createUser({
-    username,
     password: hashedPassword,
     phone_number,
-    email,
     provider,
   });
   const { JWT_SECRET } = process.env;

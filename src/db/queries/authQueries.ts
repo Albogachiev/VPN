@@ -2,28 +2,19 @@ import { db } from '../db';
 import jwt from 'jsonwebtoken';
 import { CreateUserParams, GetUserParams } from '../../types/authTypes';
 
-const getUserByUsernameOrEmailOrPhone = async ({
-  password,
-  email,
-  phone_number,
-}: GetUserParams) => {
-  const result = await db.query(
-    'SELECT * FROM Users WHERE password=$1 Or email=$2 Or phone_number=$3',
-    [password, email, phone_number],
-  );
-  return result.rows;
+const getUserByUsernameOrEmailOrPhone = async ({ phone_number }: GetUserParams) => {
+  try {
+    const result = await db.query('SELECT * FROM Users WHERE phone_number=$1', [phone_number]);
+    return result.rows;
+  } catch (error: any) {
+    throw new Error('Ошибка при получении пользователя:' + error.message);
+  }
 };
 
-const createUser = async ({
-  username,
-  password,
-  phone_number,
-  email,
-  provider,
-}: CreateUserParams) => {
+const createUser = async ({ password, phone_number, provider }: CreateUserParams) => {
   const newUser = await db.query(
-    'INSERT INTO User(username, password_hash, phone_numbers, email, provider) VALUES ($1, $2, $3, $4, $5)',
-    [username, password, phone_number, email, provider],
+    'INSERT INTO Users ( password_hash, phone_number, provider) VALUES ($1, $2, $3)',
+    [password, phone_number, provider],
   );
   return newUser;
 };
@@ -52,5 +43,25 @@ ON CONFLICT (user_id) DO UPDATE SET token = $2, created_at = NOW();
 `;
   await db.query(query, [userId, refreshToken]);
 };
+//функция для сохранения код в бд
+const saveVerifycationCode = async (phone_number: number, code: string): Promise<void> => {
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); //код действителен 5 минут
+  const query = `INSERT INTO VerificationCodes (phone_number, verification_code, expires_at) VALUES ($1, $2, $3)`;
+  await db.query(query, [phone_number, code, expiresAt]);
+};
 
-export { getUserByUsernameOrEmailOrPhone, createUser, verifyRefreshToken, saveRefreshToken };
+//функция для проверки кода в бд
+const verifyCodeInDb = async (phone_number: string, code: string): Promise<boolean> => {
+  const query = `SELECT * FROM VerificationCodes WHERE user_id = $1 AND verification_code = $2
+  AND expires_at > NOW()`;
+  const result = await db.query(query, [phone_number, code]);
+  return result.rows.length > 0;
+};
+export {
+  getUserByUsernameOrEmailOrPhone,
+  createUser,
+  verifyRefreshToken,
+  saveRefreshToken,
+  saveVerifycationCode,
+  verifyCodeInDb,
+};
