@@ -1,4 +1,9 @@
 import { JwtPayload } from 'jsonwebtoken';
+import 'express-session';
+
+declare module 'express-session' {
+  interface SessionData extends CreateUserParams
+}
 
 declare global {
   //добавил свойство user в объекте Request
@@ -23,7 +28,7 @@ interface User {
 interface CreateUserParams {
   password: string;
   phone_number: string;
-  provider: string;
+  provider?: string;
 }
 
 interface GetUserParams {

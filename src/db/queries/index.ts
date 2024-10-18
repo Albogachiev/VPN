@@ -1,8 +1,7 @@
 export {
-  getUserByUsernameOrEmailOrPhone,
+  getUserByPhone,
   createUser,
   saveRefreshToken,
   verifyRefreshToken,
-  saveVerifycationCode,
   verifyCodeInDb,
 } from './authQueries';
