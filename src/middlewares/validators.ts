@@ -3,11 +3,9 @@ import { Request, Response, NextFunction } from 'express';
 
 const registerValidationRules = () => {
   return [
-    body('username').notEmpty().withMessage('Требуется имя пользователя'),
     body('password')
       .isLength({ min: 6 })
       .withMessage('Пароль должен быть длиной не менее 6 символов'),
-    body('email').isEmail().withMessage('Неверный адрес электронной почты').normalizeEmail(),
     body('phone')
       .optional()
       .isLength({ min: 9 })
